@@ -24,10 +24,18 @@ let sequence n =
       else sequence_aux (encode accumulator) (i + 1)
     in
 
+    let digit_to_string d =
+      match d with
+      | 1 -> "1"
+      | 2 -> "2"
+      | 3 -> "3"
+      | _ -> ""
+    in
+
     let rec int_list_to_string accumulator list =
         match list with
         | [] -> accumulator
-        | e::l -> int_list_to_string (accumulator ^ string_of_int e) l
+        | e::l -> int_list_to_string (accumulator ^ digit_to_string e) l
     in
 
     int_list_to_string "" (sequence_aux [1] 1)
