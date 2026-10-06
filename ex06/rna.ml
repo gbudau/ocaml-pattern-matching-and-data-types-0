@@ -7,6 +7,7 @@ type nucleobase =
  | T
  | C
  | G
+ | U
  | None
 
 type nucleotide = {
@@ -16,6 +17,8 @@ type nucleotide = {
 }
 
 type helix = nucleotide list
+
+type rna = nucleobase list
 
 let make_nucleotide base = { phosphate = "phosphate"; deoxyribose = "deoxyribose"; nucleobase = base }
 
@@ -42,7 +45,7 @@ let helix_to_string (h: helix) : string =
     | T -> "T"
     | C -> "C"
     | G -> "G"
-    | None -> ""
+    | _ -> ""
 in
   let rec helix_to_string_aux accumulator l =
     match l with
@@ -72,6 +75,29 @@ let complementary_helix (h: helix) : helix =
     | head::tail -> complementary_helix_aux ((complementary_nucleotide head) :: accumulator) tail
   in complementary_helix_aux [] h
 
+let generate_rna (h: helix) : rna =
+
+  let helix_to_rna_base nucleotide =
+    match nucleotide.nucleobase with
+    | A -> U
+    | T -> A
+    | C -> G
+    | G -> C
+    | _ -> None
+  in
+
+  let rec reverse accumulator = function
+    | [] -> accumulator
+    | head::tail -> reverse (head :: accumulator) tail
+  in
+
+  let rec generate_rna_aux accumulator l =
+    match l with
+    | [] -> reverse [] accumulator
+    | head::tail -> generate_rna_aux ((helix_to_rna_base head) :: accumulator) tail
+  in
+    generate_rna_aux [] h
+
 let () =
 Random.self_init ();
 print_endline (helix_to_string (generate_helix 1));
@@ -87,4 +113,22 @@ print_endline (helix_to_string (generate_helix 10));
 let h = generate_helix 42 in
 print_endline (helix_to_string h);
 print_endline (helix_to_string (complementary_helix h));
+
+let rna_to_string (r: rna) : string =
+  let nucleobase_to_string n = match n with
+    | A -> "A"
+    | T -> "T"
+    | C -> "C"
+    | G -> "G"
+    | U -> "U"
+    | _ -> ""
+in
+  let rec rna_to_string_aux accumulator l =
+    match l with
+    | [] -> accumulator
+    | head::tail -> rna_to_string_aux (accumulator ^ (nucleobase_to_string head)) tail
+  in
+  rna_to_string_aux "" r
+in
+print_endline (rna_to_string (generate_rna h));
 ()
