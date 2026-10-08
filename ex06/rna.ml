@@ -21,6 +21,13 @@ type helix = nucleotide list
 type rna = nucleobase list
 
 let make_nucleotide base = { phosphate = "phosphate"; deoxyribose = "deoxyribose"; nucleobase = base }
+let nucleobase_to_string n = match n with
+  | A -> "A"
+  | T -> "T"
+  | C -> "C"
+  | G -> "G"
+  | U -> "U"
+  | _ -> ""
 
 let generate_helix (n: int) : helix =
   if n <= 0 then []
@@ -40,13 +47,6 @@ let generate_helix (n: int) : helix =
     generate_helix_aux [] n
 
 let helix_to_string (h: helix) : string =
-  let nucleobase_to_string n = match n with
-    | A -> "A"
-    | T -> "T"
-    | C -> "C"
-    | G -> "G"
-    | _ -> ""
-in
   let rec helix_to_string_aux accumulator l =
     match l with
     | [] -> accumulator
@@ -77,8 +77,8 @@ let complementary_helix (h: helix) : helix =
 
 let generate_rna (h: helix) : rna =
 
-  let helix_to_rna_base nucleotide =
-    match nucleotide.nucleobase with
+  let rna_base_from_dna_base base =
+    match base with
     | A -> U
     | T -> A
     | C -> G
@@ -94,35 +94,17 @@ let generate_rna (h: helix) : rna =
   let rec generate_rna_aux accumulator l =
     match l with
     | [] -> reverse [] accumulator
-    | head::tail -> generate_rna_aux ((helix_to_rna_base head) :: accumulator) tail
+    | head::tail -> generate_rna_aux ((rna_base_from_dna_base head.nucleobase) :: accumulator) tail
   in
     generate_rna_aux [] h
 
 let () =
 Random.self_init ();
-print_endline (helix_to_string (generate_helix 1));
-print_endline (helix_to_string (generate_helix 2));
-print_endline (helix_to_string (generate_helix 3));
-print_endline (helix_to_string (generate_helix 4));
-print_endline (helix_to_string (generate_helix 5));
-print_endline (helix_to_string (generate_helix 6));
-print_endline (helix_to_string (generate_helix 7));
-print_endline (helix_to_string (generate_helix 8));
-print_endline (helix_to_string (generate_helix 9));
-print_endline (helix_to_string (generate_helix 10));
 let h = generate_helix 42 in
 print_endline (helix_to_string h);
 print_endline (helix_to_string (complementary_helix h));
 
 let rna_to_string (r: rna) : string =
-  let nucleobase_to_string n = match n with
-    | A -> "A"
-    | T -> "T"
-    | C -> "C"
-    | G -> "G"
-    | U -> "U"
-    | _ -> ""
-in
   let rec rna_to_string_aux accumulator l =
     match l with
     | [] -> accumulator

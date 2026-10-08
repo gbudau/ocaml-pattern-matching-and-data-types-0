@@ -19,6 +19,13 @@ type helix = nucleotide list
 
 let make_nucleotide base = { phosphate = "phosphate"; deoxyribose = "deoxyribose"; nucleobase = base }
 
+let nucleobase_to_string n = match n with
+  | A -> "A"
+  | T -> "T"
+  | C -> "C"
+  | G -> "G"
+  | None -> ""
+
 let generate_helix (n: int) : helix =
   if n <= 0 then []
   else
@@ -37,13 +44,6 @@ let generate_helix (n: int) : helix =
     generate_helix_aux [] n
 
 let helix_to_string (h: helix) : string =
-  let nucleobase_to_string n = match n with
-    | A -> "A"
-    | T -> "T"
-    | C -> "C"
-    | G -> "G"
-    | None -> ""
-in
   let rec helix_to_string_aux accumulator l =
     match l with
     | [] -> accumulator
