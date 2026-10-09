@@ -24,7 +24,7 @@ let nucleobase_to_string n = match n with
   | T -> "T"
   | C -> "C"
   | G -> "G"
-  | None -> ""
+  | None -> "?"
 
 let generate_helix (n: int) : helix =
   if n <= 0 then []

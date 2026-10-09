@@ -197,53 +197,74 @@ let decode_arn (r: rna) : protein =
   in
   aux [] (generate_bases_triplets r)
 
-let () =
-  (* Multiple of 3 with no Stop *)
-  (* AUG (Met) -> GCC (Ala) -> UUU (Phe) *)
-  let rna_normal : rna = [A; U; G; G; C; C; U; U; U] in
-  print_endline "Met-Ala-Phe";
-  print_endline (string_of_protein (decode_arn rna_normal));
-  print_endline "";
-
-  (* Early Stop *)
-  (* AUG (Met) -> UAA (Stop) -> GCC (Ala should be ignored) *)
-  let rna_stop : rna = [A; U; G; U; A; A; G; C; C] in
-  print_endline "Met";
-  print_endline (string_of_protein (decode_arn rna_stop));
-  print_endline "";
-
-  (* Incomplete triplet at the end *)
-  (* AUG (Met) -> GCC (Ala) -> U (Ignored because it's not a full triplet) *)
-  let rna_incomplete : rna = [A; U; G; G; C; C; U] in
-  print_endline "Met-Ala";
-  print_endline (string_of_protein (decode_arn rna_incomplete));
-  print_endline "";
-
-  (* Empty RNA *)
-  let rna_empty : rna = [] in
-  print_endline "";
-  print_endline (string_of_protein (decode_arn rna_empty));
-  print_endline "";
-
-  (* Random generation *)
-  Random.self_init ();
-  print_endline "(Random Helix -> RNA -> Protein):";
-
-  let random_h = generate_helix 30 in (* 30 bases = 10 possible triplets *)
-  let random_r = generate_rna random_h in
-
-  let base_triplets_to_string (t: ((nucleobase * nucleobase * nucleobase) list)): string =
-    let triplet_to_string (first, second, third) =
-       (nucleobase_to_string first) ^ (nucleobase_to_string second) ^ (nucleobase_to_string third)
-    in
-
-    let rec base_triplets_to_string_aux accumulator l =
-      match l with
-      | [] -> accumulator
-      | head::tail -> base_triplets_to_string_aux (accumulator ^ "(" ^ (triplet_to_string head) ^ ")") tail
-    in
-    base_triplets_to_string_aux "" t
+let rna_to_string (r: rna) : string =
+  let rec rna_to_string_aux accumulator l =
+    match l with
+    | [] -> accumulator
+    | head::tail -> rna_to_string_aux (accumulator ^ (nucleobase_to_string head)) tail
   in
-  print_endline (base_triplets_to_string (generate_bases_triplets random_r)); 
-  print_endline (string_of_protein (decode_arn random_r));
+  rna_to_string_aux "" r
+
+let base_triplets_to_string (t: ((nucleobase * nucleobase * nucleobase) list)): string =
+  let triplet_to_string (first, second, third) =
+     (nucleobase_to_string first) ^ (nucleobase_to_string second) ^ (nucleobase_to_string third)
+  in
+
+  let rec base_triplets_to_string_aux accumulator l =
+    match l with
+    | [] -> accumulator
+    | head::tail -> base_triplets_to_string_aux (accumulator ^ "(" ^ (triplet_to_string head) ^ ")") tail
+  in
+  base_triplets_to_string_aux "" t
+
+let life (s: string) : unit =
+  let char_to_nucleotide c = match c with
+  | 'A' -> A
+  | 'T' -> T
+  | 'C' -> C
+  | 'G' -> G
+  | 'U' -> U
+  | _ -> None
+in
+  let rec helix_from_string accumulator n_left =
+    if n_left < 0 then accumulator
+    else helix_from_string ((make_nucleotide (char_to_nucleotide s.[n_left])) :: accumulator) (n_left - 1)
+in
+let h = helix_from_string [] ((String.length s) - 1)
+in
+print_endline ("DNA Helix: " ^ helix_to_string h);
+
+let r = generate_rna h
+in
+print_endline ("RNA:       " ^ rna_to_string r);
+
+let triplets = generate_bases_triplets r
+in
+print_endline ("Triplets:  " ^ base_triplets_to_string triplets);
+print_endline ("Protein:   " ^ string_of_protein (decode_arn r))
+
+let () =
+  life "CTTTACGTCGAACACAACCTGCGATCGCAAAATCGTGTTAACCATGTGGAGTGACTTGGAACCACAAACGTAAGACATGCAAT";
+  print_endline "";
+
+  life "GAAATGCAGCTTGTGTTGGACGCTAGCGTTTTAGCACAATTGGTACACCTCACTGAACCTTGGTGTTTGCATTCTGTACGTTA";
+  print_endline "";
+
+  (* Edge cases *)
+
+  (* Empty string *)
+  life "";
+  print_endline "";
+
+  (* Stop *)
+  life "ATC";
+  print_endline "";
+
+  (* Invalid input *)
+  life "ATXQC";
+  print_endline "";
+
+  (* Multiple of 3 *)
+  life "ATGCGT";
+  print_endline "";
 ()
